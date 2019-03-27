@@ -6,17 +6,19 @@ import java.awt.event.ActionEvent;
 import javax.swing.ImageIcon;
 import javax.swing.Timer;
 
+import Enums.Status;
 import Enums.direction;
 
 public class Fruit extends Food {
 
-	ImageIcon blueIcon, greenIcon;
+	private ImageIcon blueIcon, greenIcon;
 
 	public Fruit(int xPos, int yPos, int size) {
 		super(xPos, yPos, size);
 		blueIcon = new ImageIcon(getClass().getResource("blue5.png"));
 		greenIcon = new ImageIcon(getClass().getResource("greenFruit10.png"));
-		setTimer(new Timer(getPreiod(), this));
+		setAge(getInitialAge());
+		setTimer(new Timer(getPeriod(), this));
 		setImageIcon(blueIcon);
 		getTimer().start();
 	}
@@ -29,19 +31,29 @@ public class Fruit extends Food {
 	@Override
 	public void grow() {
 		setAge(getAge() + 1);
-		if (getAge() == 5)
+
+		switch (getAge()) {
+		case 4:
+			setStatus(Status.medium);
+			setImageSize(getStatus());
+			break;
+		case 7:
 			setImageIcon(greenIcon);
-		if (getAge() == 10) {
+			setStatus(Status.large);
+			setImageSize(getStatus());
+			break;
+		case 10:
 			changePosition();
 			setImageIcon(blueIcon);
 			getTimer().restart();
+			break;
 		}
 
 	}
 
 	@Override
 	public void draw(Graphics g) {
-		g.drawImage(getImageIcon().getImage(), getxPos(), getyPos(), getSize(), getSize(), null);
+		g.drawImage(getImageIcon().getImage(), getxPos(), getyPos(), getNewSize(), getNewSize(), null);
 	}
 
 	@Override
@@ -53,12 +65,14 @@ public class Fruit extends Food {
 	@Override
 	public void setDefault() {
 		setImageIcon(blueIcon);
+		setStatus(Status.small);
+		setImageSize(getStatus());
+		setAge(getInitialAge());
 		getTimer().restart();
-		grow();
 	}
 
 	@Override
 	public int additionScore() {
-		return 5 * getAge();
+		return (5 * this.getAge());
 	}
 }

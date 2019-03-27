@@ -1,6 +1,8 @@
 package main;
 
+import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -11,6 +13,7 @@ import java.util.Random;
 
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 
@@ -39,8 +42,10 @@ public class MapFrame extends JPanel implements KeyListener, ActionListener {
 	private ArrayList<Drawable> drawable;
 	private ArrayList<Food> food;
 	private Random random;
-	private Timer timer;
+	private Timer UITimer;
 	private String scoreString = "the SCORE is : 0";
+	private JLabel score;
+
 	public static int leftMost, rightMost, downMost, upMost;
 
 	public MapFrame(int numOfSquares, AskingUser userData) {
@@ -65,11 +70,10 @@ public class MapFrame extends JPanel implements KeyListener, ActionListener {
 		drawable.add(cat);
 
 		frame.add(this);
-		timer = new Timer(100 / 60, this);
-		timer.start();
+		UITimer = new Timer(100 / 60, this);
+		UITimer.start();
 
 		int i = 100;
-
 		while (cat.isAlive(ghosts)) {
 			moveStep();
 			sleepAmoment(i);
@@ -87,6 +91,12 @@ public class MapFrame extends JPanel implements KeyListener, ActionListener {
 		frame.setResizable(false);
 		frame.setAlwaysOnTop(true);
 		frame.addKeyListener(this);
+		frame.setLayout(null);
+		score = new JLabel(scoreString);
+		score.setFont(new Font("", Font.BOLD, 17));
+		score.setBounds(10, 10, 200, 30);
+		score.setForeground(Color.black);
+		frame.add(score);
 	}
 
 	private void sleepAmoment(int i) {
@@ -102,11 +112,17 @@ public class MapFrame extends JPanel implements KeyListener, ActionListener {
 		for (moveable object : moveable) {
 			object.move();
 		}
-		
+
 		for (Food object : food) {
-			if (object.consumed(cat.getxPos(), cat.getyPos()))
-				cat.setScore(cat.getScore() + object.additionScore());
+			if (object.consumed(cat.getxPos(), cat.getyPos())) {
+				int newScore = cat.getScore() + object.additionScore();
+				cat.setScore(newScore);
+				object.changePosition();
+			}
+			System.out.printf("%d %d %n", object.getAge(), object.additionScore());
 		}
+		System.out.println(cat.getScore());
+		System.out.println("--------");
 
 	}
 
@@ -239,6 +255,7 @@ public class MapFrame extends JPanel implements KeyListener, ActionListener {
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		scoreString = "the SCORE is : " + cat.getScore();
+		score.setText(scoreString);
 		frame.repaint();
 	}
 

@@ -6,6 +6,7 @@ import java.awt.event.ActionEvent;
 import javax.swing.ImageIcon;
 import javax.swing.Timer;
 
+import Enums.Status;
 import Enums.direction;
 
 public class Poison extends Food {
@@ -16,7 +17,8 @@ public class Poison extends Food {
 		super(xPos, yPos, size);
 		poison5 = new ImageIcon(getClass().getResource("poison5.png"));
 		poison10 = new ImageIcon(getClass().getResource("poison10.png"));
-		setTimer(new Timer(getPreiod(), this));
+		setAge(getInitialAge());
+		setTimer(new Timer(getPeriod(), this));
 		setImageIcon(poison5);
 		getTimer().start();
 	}
@@ -29,15 +31,27 @@ public class Poison extends Food {
 	@Override
 	public void grow() {
 		setAge(getAge() - 1);
-		if (getAge() == -10)
+
+		switch (getAge()) {
+		case -5:
+			setStatus(Status.medium);
+			setImageSize(getStatus());
+			break;
+		case -10:
+			setStatus(Status.large);
+			setImageSize(getStatus());
 			setImageIcon(poison10);
+			break;
+		}
 	}
 
 	@Override
 	public void setDefault() {
 		setImageIcon(poison5);
+		setStatus(Status.small);
+		setImageSize(getStatus());
 		getTimer().restart();
-		grow();
+		setAge(getInitialAge());
 	}
 
 	@Override
@@ -48,12 +62,12 @@ public class Poison extends Food {
 
 	@Override
 	public void draw(Graphics g) {
-		g.drawImage(getImageIcon().getImage(), getxPos(), getyPos(), getSize(), getSize(), null);
+		g.drawImage(getImageIcon().getImage(), getxPos(), getyPos(), getNewSize(), getNewSize(), null);
 	}
 
 	@Override
 	public int additionScore() {
-		return 10 * getAge();
+		return (10 * this.getAge());
 	}
 
 }
