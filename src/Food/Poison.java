@@ -17,7 +17,7 @@ public class Poison extends Food {
 		super(xPos, yPos, size);
 		poison5 = new ImageIcon(getClass().getResource("poison5.png"));
 		poison10 = new ImageIcon(getClass().getResource("poison10.png"));
-		setAge(getInitialAge());
+		setAge(-getInitialAge());
 		setTimer(new Timer(getPeriod(), this));
 		setImageIcon(poison5);
 		getTimer().start();
@@ -51,7 +51,7 @@ public class Poison extends Food {
 		setStatus(Status.small);
 		setImageSize(getStatus());
 		getTimer().restart();
-		setAge(getInitialAge());
+		setAge(-getInitialAge());
 	}
 
 	@Override

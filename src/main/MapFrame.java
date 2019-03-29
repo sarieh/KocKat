@@ -43,8 +43,8 @@ public class MapFrame extends JPanel implements KeyListener, ActionListener {
 	private ArrayList<Food> food;
 	private Random random;
 	private Timer UITimer;
-	private String scoreString = "the SCORE is : 0";
-	private JLabel score;
+	private String scoreString = "SCORE : 0";
+	private JLabel score, gameOver;
 
 	public static int leftMost, rightMost, downMost, upMost;
 
@@ -70,19 +70,18 @@ public class MapFrame extends JPanel implements KeyListener, ActionListener {
 		drawable.add(cat);
 
 		frame.add(this);
-		UITimer = new Timer(100 / 60, this);
+		UITimer = new Timer(1000 / 60, this);
 		UITimer.start();
 
-		int i = 100;
+		int i = 120;
 		while (cat.isAlive(ghosts)) {
 			moveStep();
 			sleepAmoment(i);
 
-			if (i > 40)
+			if (i > 50)
 				i = i - 2;
 		}
-		frame.setVisible(false);
-		System.exit(0);
+		gameOver();
 	}
 
 	private void setFrameProperties() {
@@ -92,38 +91,14 @@ public class MapFrame extends JPanel implements KeyListener, ActionListener {
 		frame.setAlwaysOnTop(true);
 		frame.addKeyListener(this);
 		frame.setLayout(null);
+		frame.setUndecorated(true);
+
 		score = new JLabel(scoreString);
-		score.setFont(new Font("", Font.BOLD, 17));
+		score.setFont(new Font("", Font.BOLD, 19));
 		score.setBounds(10, 10, 200, 30);
-		score.setForeground(Color.black);
+		score.setForeground(Color.RED);
+
 		frame.add(score);
-	}
-
-	private void sleepAmoment(int i) {
-
-		try {
-			Thread.sleep(i);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-	}
-
-	private void moveStep() {
-		for (moveable object : moveable) {
-			object.move();
-		}
-
-		for (Food object : food) {
-			if (object.consumed(cat.getxPos(), cat.getyPos())) {
-				int newScore = cat.getScore() + object.additionScore();
-				cat.setScore(newScore);
-				object.changePosition();
-			}
-			System.out.printf("%d %d %n", object.getAge(), object.additionScore());
-		}
-		System.out.println(cat.getScore());
-		System.out.println("--------");
-
 	}
 
 	private void addElementToMap() {
@@ -151,17 +126,20 @@ public class MapFrame extends JPanel implements KeyListener, ActionListener {
 		int rest;
 		int numOfAsh;
 
-		if (userData.getGhostsNum() == 15) {
-			numOfCasper = 5;
-			numOfDolley = 5;
-			numOfAsh = 5;
-		} else {
-			numOfAsh = getRandomNumber(userData.getGhostsNum());
-			numOfDolley = getRandomNumber(userData.getGhostsNum() - numOfAsh);
-			rest = userData.getGhostsNum() - numOfAsh - numOfDolley;
-			numOfCasper = rest > 0 ? rest : 0;
+		int numberEntered = userData.getGhostsNum();
+		int oneThird = numberEntered / 3;
+		rest = numberEntered % 3;
 
+		if (numberEntered % 3 == 0) {
+			numOfCasper = oneThird;
+			numOfDolley = oneThird;
+			numOfAsh = oneThird;
+		} else {
+			numOfAsh = oneThird + (1);
+			numOfDolley = oneThird + (rest - 1 > 0 ? 1 : 0);
+			numOfCasper = oneThird;
 		}
+
 		for (int i = 0; i < numOfCasper; i++) {
 			ghosts.add(new Casper((random.nextInt(rightMost)), random.nextInt(downMost), squareLength));
 		}
@@ -187,11 +165,19 @@ public class MapFrame extends JPanel implements KeyListener, ActionListener {
 
 	}
 
-	private int getRandomNumber(int num) {
-		if (num > 0)
-			return random.nextInt(userData.getGhostsNum()) + 1;
-		else
-			return 0;
+	private void moveStep() {
+		for (moveable object : moveable) {
+			object.move();
+		}
+
+		for (Food object : food) {
+			if (object.consumed(cat.getxPos(), cat.getyPos())) {
+				int newScore = cat.getScore() + object.additionScore();
+				cat.setScore(newScore);
+				object.changePosition();
+			}
+		}
+
 	}
 
 	@Override
@@ -219,7 +205,7 @@ public class MapFrame extends JPanel implements KeyListener, ActionListener {
 		leftMost = 0;
 		upMost = 0;
 		rightMost = mapLength - squareLength;
-		downMost = mapLength - (int) (1.5 * squareLength);
+		downMost = mapLength - squareLength;
 
 		setSize(mapLength, mapLength);
 		frame.setSize(mapLength, mapLength);
@@ -228,6 +214,37 @@ public class MapFrame extends JPanel implements KeyListener, ActionListener {
 
 	private void setSquareLength() {
 		squareLength = mapLength / numOfSquares;
+	}
+
+	private void sleepAmoment(int i) {
+
+		try {
+			Thread.sleep(i);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private void gameOver() {
+		for (Food fd : food)
+			fd.getTimer().stop();
+		gameOver = new JLabel("Game Over !!!");
+		gameOver.setFont(new Font("", Font.BOLD, 45));
+		gameOver.setBounds(mapLength / 2 - 150, mapLength / 2 - 60, 300, 60);
+		gameOver.setOpaque(true);
+		gameOver.setBackground(Color.YELLOW);
+		gameOver.setForeground(Color.RED);
+
+		JLabel exitLabel = new JLabel("Press ESC to Exit.");
+		exitLabel.setFont(new Font("", Font.BOLD, 30));
+		exitLabel.setBounds(mapLength / 2 - 140, mapLength / 2, 300, 60);
+		exitLabel.setForeground(Color.YELLOW);
+
+		frame.add(gameOver, 0);
+		frame.add(exitLabel, 1);
+
+		frame.repaint();
+		UITimer.stop();
 	}
 
 	@Override
@@ -245,6 +262,8 @@ public class MapFrame extends JPanel implements KeyListener, ActionListener {
 			cat.setDir(direction.up);
 		} else if (pressedKey == KeyEvent.VK_DOWN) {
 			cat.setDir(direction.down);
+		} else if (pressedKey == KeyEvent.VK_ESCAPE) {
+			System.exit(0);
 		}
 	}
 
@@ -254,7 +273,7 @@ public class MapFrame extends JPanel implements KeyListener, ActionListener {
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		scoreString = "the SCORE is : " + cat.getScore();
+		scoreString = "SCORE : " + cat.getScore();
 		score.setText(scoreString);
 		frame.repaint();
 	}

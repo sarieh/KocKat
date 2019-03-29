@@ -37,8 +37,10 @@ public class Fruit extends Food {
 			setStatus(Status.medium);
 			setImageSize(getStatus());
 			break;
-		case 7:
+		case 5:
 			setImageIcon(greenIcon);
+			break;
+		case 7:
 			setStatus(Status.large);
 			setImageSize(getStatus());
 			break;
